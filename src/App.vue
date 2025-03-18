@@ -1,32 +1,29 @@
 <template>
 
-  <ScoreBoard />
+  <div class="main-div">
+    <ScoreBoard :winCount="this.winCount" :loseCount="this.loseCount" />
+    <div>
+      <h1 v-html="question"></h1>
 
-  <div>
-     <h1 v-html="question"></h1>
+      <template v-if="this.question">
+        <template v-for="answer in answers" :key="answer">
+          <input type="radio" name="options" :value="answer" :disabled="answerSubmitted" v-model="this.chosenAnswer">
+          <label v-html="answer"></label><br>
+        </template>
 
-     <template v-if="this.question">
-       <template v-for="answer in answers" :key="answer">
-         <input  
-            type="radio" 
-            name="options" 
-            :value="answer"
-            :disabled="answerSubmitted"
-            v-model="this.chosenAnswer"
-            >
-         <label v-html="answer"></label><br>
-       </template>
-     
-       <button @click="this.submitAnswer()" v-if="!this.answerSubmitted" class="send" type="button">Select Answer</button>
-     
-       <section class="result" v-if="answerSubmitted">
-         <button @click="newAnswer" class="send" type="button">Next Question</button>
-         <h4 v-if="this.chosenAnswer === this.correctAnswer">Congratulations, the answer "<span v-html="this.correctAnswer"></span>" is correct.</h4>
-         <h4 v-else>Your answer was incorrect. the right answer was "<span v-html="this.correctAnswer"></span>".</h4>
-       </section>
+        <button @click="this.submitAnswer()" v-if="!this.answerSubmitted" class="send" type="button">Select
+          Answer</button>
+
+        <section class="result" v-if="answerSubmitted">
+          <button @click="newAnswer" class="send" type="button">Next Question</button>
+          <h4 v-if="this.chosenAnswer === this.correctAnswer">Congratulations, the answer "<span
+              v-html="this.correctAnswer"></span>" is correct.</h4>
+          <h4 v-else>Your answer was incorrect. the right answer was "<span v-html="this.correctAnswer"></span>".</h4>
+        </section>
 
       </template>
 
+    </div>
   </div>
 </template>
 
@@ -39,14 +36,16 @@ export default {
   components: {
     ScoreBoard
   },
-  
+
   data() {
     return {
       question: undefined,
       incorrectAnswers: [],
       correctAnswer: undefined,
       chosenAnswer: undefined,
-      answerSubmitted: false
+      answerSubmitted: false,
+      winCount: 0,
+      loseCount: 0
     }
   },
   computed: {
@@ -64,26 +63,33 @@ export default {
       }
       this.answerSubmitted = true;
       if (this.chosenAnswer === this.correctAnswer) {
-        console.log('Correct answer');
+        this.winCount++;
       } else {
-        console.log('Incorrect answer');
+        this.loseCount++;
       }
+      this.saveScore();
     },
     newAnswer() {
       this.answerSubmitted = false;
 
       this.axios.get('https://opentdb.com/api.php?amount=1&category=18')
-      .then(response => {
-        this.question = response.data.results[0].question;
-        this.incorrectAnswers = response.data.results[0].incorrect_answers;
-        this.correctAnswer = response.data.results[0].correct_answer;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+        .then(response => {
+          this.question = response.data.results[0].question;
+          this.incorrectAnswers = response.data.results[0].incorrect_answers;
+          this.correctAnswer = response.data.results[0].correct_answer;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    saveScore() {
+      localStorage.setItem('winCount', this.winCount);
+      localStorage.setItem('loseCount', this.loseCount);
     }
   },
   created() {
+    this.winCount = localStorage.getItem('winCount') || 0;
+    this.loseCount = localStorage.getItem('loseCount') || 0;
     this.newAnswer();
   }
 
@@ -92,6 +98,25 @@ export default {
 </script>
 
 <style lang="scss">
+
+body {
+  background-image: linear-gradient(to right, #f6d365, #fda085);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  width: 100vw;
+}
+
+.main-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
