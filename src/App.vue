@@ -1,4 +1,7 @@
 <template>
+
+  <ScoreBoard />
+
   <div>
      <h1 v-html="question"></h1>
 
@@ -29,8 +32,13 @@
 
 <script>
 
+import ScoreBoard from './components/ScoreBoard.vue';
+
 export default {
   name: 'App',
+  components: {
+    ScoreBoard
+  },
   
   data() {
     return {
